@@ -1,0 +1,226 @@
+// microservices/proto/user.proto
+// Protocol Buffers 服务定义 - 详细注释版
+
+/*
+Protocol Buffers（Protobuf）是 Google 开发的一种语言无关、平台无关的可扩展序列化机制。
+
+主要特点：
+1. 高效 - 二进制格式，比 JSON/XML 更小更快
+2. 跨语言 - 支持多种编程语言
+3. 向后兼容 - 添加新字段不影响旧代码
+4. 代码生成 - 自动生成各种语言的代码
+
+语法版本：
+  syntax = "proto3"; // 使用 proto3 语法
+
+基本类型：
+  - 数值类型：int32, int64, uint32, uint64, float, double
+  - 字符串：string
+  - 字节：bytes
+  - 布尔：bool
+  - 枚举：enum
+
+安装 protoc：
+  https://github.com/protocolbuffers/protobuf/releases
+
+安装 Go 插件：
+  go install google.golang.org/protobuf/cmd/protoc-gen-go@latest
+  go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@latest
+
+编译命令：
+  protoc --go_out=. --go_opt=paths=source_relative \
+         --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+         user.proto
+*/
+
+// ====== Protobuf 定义 ======
+
+// 指定 proto 语法版本
+syntax = "proto3";
+
+// 包名，用于避免命名冲突
+package proto;
+
+// 选项配置
+option go_package = "GolangTutorial/microservices/proto";
+
+// ====== 用户服务定义 ======
+
+// UserService 提供用户管理的 RPC 服务
+service UserService {
+  // 创建用户
+  rpc CreateUser(CreateUserRequest) returns (CreateUserResponse);
+  
+  // 获取用户
+  rpc GetUser(GetUserRequest) returns (GetUserResponse);
+  
+  // 列出所有用户
+  rpc ListUsers(ListUsersRequest) returns (ListUsersResponse);
+  
+  // 更新用户
+  rpc UpdateUser(UpdateUserRequest) returns (UpdateUserResponse);
+  
+  // 删除用户
+  rpc DeleteUser(DeleteUserRequest) returns (DeleteUserResponse);
+  
+  // 搜索用户（服务端流式）
+  rpc SearchUsers(SearchUsersRequest) returns (stream SearchUsersResponse);
+  
+  // 聊天（双向流式）
+  rpc Chat(stream ChatRequest) returns (stream ChatResponse);
+}
+
+// ====== 消息定义 ======
+
+// User 用户消息
+// 使用 message 关键字定义复杂数据结构
+message User {
+  // 字段定义格式：字段类型 字段名 = 字段编号;
+  // 字段编号用于二进制编码，必须唯一且不为 0
+  
+  int64 id = 1;           // 用户唯一标识，字段编号 1
+  string username = 2;    // 用户名，字段编号 2
+  string email = 3;       // 邮箱，字段编号 3
+  string password = 4;    // 密码，字段编号 4
+  
+  // 保留字段，用于防止字段编号被重复使用
+  reserved 5, 6;          // 保留字段编号 5 和 6
+  reserved "old_field";   // 保留字段名
+  
+  int32 age = 7;          // 年龄，字段编号 7
+  
+  // 枚举类型示例
+  UserStatus status = 8;  // 用户状态，字段编号 8
+  
+  int64 created_at = 9;   // 创建时间，字段编号 9
+  int64 updated_at = 10;  // 更新时间，字段编号 10
+}
+
+// UserStatus 用户状态枚举
+enum UserStatus {
+  // 枚举值从 0 开始
+  USER_STATUS_UNSPECIFIED = 0;  // 未指定
+  USER_STATUS_ACTIVE = 1;       // 活跃
+  USER_STATUS_INACTIVE = 2;     // 非活跃
+  USER_STATUS_BANNED = 3;       // 禁用
+}
+
+// ====== 请求和响应消息 ======
+
+// CreateUserRequest 创建用户请求
+message CreateUserRequest {
+  string username = 1;  // 必填
+  string email = 2;     // 必填
+  string password = 3;  // 必填
+  int32 age = 4;        // 可选
+}
+
+// CreateUserResponse 创建用户响应
+message CreateUserResponse {
+  User user = 1;  // 创建的用户
+}
+
+// GetUserRequest 获取用户请求
+message GetUserRequest {
+  int64 id = 1;  // 用户 ID
+}
+
+// GetUserResponse 获取用户响应
+message GetUserResponse {
+  User user = 1;  // 用户信息
+}
+
+// ListUsersRequest 列出用户请求
+message ListUsersRequest {
+  int32 page = 1;      // 页码
+  int32 page_size = 2; // 每页数量
+}
+
+// ListUsersResponse 列出用户响应
+message ListUsersResponse {
+  repeated User users = 1;  // 用户列表，使用 repeated 表示数组
+  int32 count = 2;          // 用户数量
+}
+
+// UpdateUserRequest 更新用户请求
+message UpdateUserRequest {
+  int64 id = 1;      // 用户 ID
+  string username = 2; // 可选更新字段
+  string email = 3;
+  string password = 4;
+}
+
+// UpdateUserResponse 更新用户响应
+message UpdateUserResponse {
+  User user = 1;  // 更新后的用户
+}
+
+// DeleteUserRequest 删除用户请求
+message DeleteUserRequest {
+  int64 id = 1;  // 用户 ID
+}
+
+// DeleteUserResponse 删除用户响应
+message DeleteUserResponse {
+  bool success = 1;  // 是否成功
+}
+
+// SearchUsersRequest 搜索用户请求
+message SearchUsersRequest {
+  string username_prefix = 1;  // 用户名前缀
+  int32 min_age = 2;           // 最小年龄
+}
+
+// SearchUsersResponse 搜索用户响应（流式）
+message SearchUsersResponse {
+  User user = 1;  // 匹配的用户
+}
+
+// ChatRequest 聊天请求（流式）
+message ChatRequest {
+  int64 user_id = 1;  // 用户 ID
+  string message = 2; // 消息内容
+}
+
+// ChatResponse 聊天响应（流式）
+message ChatResponse {
+  int64 user_id = 1;  // 用户 ID
+  string message = 2; // 响应消息
+}
+
+// ====== 高级特性 ======
+
+/*
+1. Map 类型示例：
+   map<string, string> attributes = 1;
+
+2. Oneof 类型示例：
+   message LoginRequest {
+     oneof credential {
+       string email = 1;
+       string phone = 2;
+     }
+   }
+
+3. 嵌套消息：
+   message Group {
+     message Member {
+       string name = 1;
+     }
+     repeated Member members = 1;
+   }
+
+4. 包引用：
+   message Response {
+     proto.User user = 1;  // 引用其他包的消息
+   }
+
+5. 服务端流式：
+   rpc ListUsers(ListUsersRequest) returns (stream User);
+
+6. 客户端流式：
+   rpc CreateUsers(stream CreateUserRequest) returns (CreateUsersResponse);
+
+7. 双向流式：
+   rpc Chat(stream ChatRequest) returns (stream ChatResponse);
+*/
