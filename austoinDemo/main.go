@@ -1,7 +1,8 @@
 package main
 
 import (
-	base "github.com/austoin/golangtutorial/austoinDemo/A-base"
+	// base "github.com/austoin/GolangTutorial/austoinDemo/A-base"
+	after "github.com/austoin/GolangTutorial/austoinDemo/B-Gin_Echo_Sql_Gorm_Redis"
 )
 
 func main() {
@@ -9,5 +10,7 @@ func main() {
 	// base.Lesson6()
 
 	// base.Lesson7()
-	base.Lesson10()
+	// base.Lesson10()
+	
+	after.Lesson12()
 }
